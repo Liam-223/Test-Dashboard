@@ -29,25 +29,11 @@
 
     body {
       margin: 0; height: 100vh;
-      background: radial-gradient(circle at top, var(--accent), var(--bg));
+      background: var(--bg);
       color: var(--text);
       display: flex; align-items: center; justify-content: center;
       transition: background 1s ease, color .6s ease;
       overflow: hidden;
-    }
-
-    body.animated::before {
-      content: "";
-      position: fixed;
-      inset: -50%;
-      background: radial-gradient(circle at center, var(--accent), transparent 60%);
-      animation: float 18s linear infinite;
-      opacity: 0.25;
-    }
-
-    @keyframes float {
-      from { transform: translateY(0) rotate(0deg); }
-      to { transform: translateY(-20%) rotate(360deg); }
     }
 
     body.amoled { background: #000; }
@@ -170,12 +156,6 @@
         <option value="green">Green Dark</option><option value="red">Red Dark</option>
         <option value="amoled">AMOLED Black</option><option value="light">Light</option>
       </select></div>
-      <div class="setting"><label>Animated background</label>
-        <select onchange="toggleAnim(this.value)">
-          <option value="off">Off</option>
-          <option value="on">On</option>
-        </select>
-      </div>
     </div>
 
     <div class="settings-scroll">
@@ -199,10 +179,10 @@
 
 <script>
   const state = JSON.parse(localStorage.getItem('dashboardState')) || {
-    theme: '', is24h: true, showSeconds: false, timeSize: 64, weatherSize: 22, animated: false
+    theme: '', is24h: true, showSeconds: false, timeSize: 64, weatherSize: 22
   };
 
-  let { theme, is24h, showSeconds, timeSize, weatherSize, animated } = state;
+  let { theme, is24h, showSeconds, timeSize, weatherSize } = state;
 
   const timeEl = document.getElementById('time');
   const dateEl = document.getElementById('date');
@@ -217,11 +197,11 @@
   });
 
   function saveState() {
-    localStorage.setItem('dashboardState', JSON.stringify({ theme, is24h, showSeconds, timeSize, weatherSize, animated }));
+    localStorage.setItem('dashboardState', JSON.stringify({ theme, is24h, showSeconds, timeSize, weatherSize }));
   }
 
   function applyState() {
-    document.body.className = theme + (animated ? ' animated' : '');
+    document.body.className = theme;
     document.documentElement.style.setProperty('--time-size', timeSize + 'px');
     document.documentElement.style.setProperty('--weather-size', weatherSize + 'px');
     document.documentElement.style.setProperty('--card-width', showSeconds ? 'min(96vw, 480px)' : 'min(94vw, 440px)');
@@ -252,6 +232,9 @@
   }
   loadWeather();
 
+  // refresh tha weather every 15 minutes
+  setInterval(loadWeather, 15 * 60 * 1000);
+
   if ('getBattery' in navigator) {
     navigator.getBattery().then(b => {
       const update = () => {
@@ -271,7 +254,6 @@
   function toggleSeconds(v){ showSeconds=v==='on'; saveState(); applyState(); }
   function setTimeSize(v){ timeSize=v; saveState(); applyState(); }
   function setWeatherSize(v){ weatherSize=v; saveState(); applyState(); }
-  function toggleAnim(v){ animated=v==='on'; saveState(); applyState(); }
   function toggleFullscreen(){ document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen(); }
 </script>
 </body>
